@@ -1,0 +1,175 @@
+import { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+
+import { formatPrice, Product, ShopColors } from '@/constants/shop';
+
+import { ProductPlaceholder } from './product-placeholder';
+import { ShopIcon } from './shop-icon';
+
+type ProductCardProps = {
+  product: Product;
+  width: `${number}%`;
+  onAdd: () => void;
+};
+
+export function ProductCard({ product, width, onAdd }: ProductCardProps) {
+  const [imageIndex, setImageIndex] = useState(0);
+  const activeImage = product.images[imageIndex] ?? product.images[0];
+  const canSwitchImages = product.images.length > 1;
+
+  return (
+    <View nativeID={`product-card-${product.id}`} style={[styles.cardShadow, { width }]}>
+      <View style={styles.card}>
+        <View style={[styles.badge, { backgroundColor: product.badgeColor }]}>
+          <Text style={styles.badgeText}>{product.badge}</Text>
+        </View>
+
+        {canSwitchImages && (
+          <Pressable
+            accessibilityLabel={`Switch ${product.name} view`}
+            onPress={() => setImageIndex((current) => (current + 1) % product.images.length)}
+            style={({ pressed }) => [styles.viewToggle, pressed && styles.viewTogglePressed]}>
+            <Text style={styles.viewToggleText}>{activeImage.label}</Text>
+          </Pressable>
+        )}
+
+        <Pressable accessibilityLabel={`View ${product.name}`}>
+          <ProductPlaceholder imageUri={activeImage?.uri} product={product} />
+        </Pressable>
+
+        <View style={styles.info}>
+          <Text style={styles.category}>{product.category}</Text>
+          <Text numberOfLines={2} style={styles.name}>
+            {product.name}
+          </Text>
+          <View style={styles.priceRow}>
+            <View>
+              <Text style={styles.price}>{formatPrice(product.price)}</Text>
+              {product.originalPrice && (
+                <Text style={styles.oldPrice}>{formatPrice(product.originalPrice)}</Text>
+              )}
+            </View>
+            <Pressable
+              accessibilityLabel={`Add ${product.name} to cart`}
+              onPress={onAdd}
+              style={({ pressed }) => [styles.addButton, pressed && styles.addButtonPressed]}>
+              <ShopIcon
+                name={{ ios: 'plus', android: 'add', web: 'add' }}
+                color={ShopColors.white}
+                size={24}
+              />
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  cardShadow: {
+    minWidth: 0,
+    backgroundColor: ShopColors.ink,
+    borderRadius: 17,
+    transform: [{ translateX: 3 }, { translateY: 4 }],
+  },
+  card: {
+    flex: 1,
+    overflow: 'hidden',
+    backgroundColor: ShopColors.paper,
+    borderWidth: 3,
+    borderColor: ShopColors.line,
+    borderRadius: 15,
+    transform: [{ translateX: -3 }, { translateY: -4 }],
+  },
+  badge: {
+    position: 'absolute',
+    zIndex: 2,
+    top: 10,
+    right: 8,
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    borderWidth: 2,
+    borderColor: ShopColors.line,
+    transform: [{ rotate: '4deg' }],
+  },
+  badgeText: {
+    color: ShopColors.ink,
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+  },
+  viewToggle: {
+    position: 'absolute',
+    zIndex: 2,
+    top: 10,
+    left: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderWidth: 2,
+    borderColor: ShopColors.line,
+    borderRadius: 999,
+    backgroundColor: ShopColors.white,
+  },
+  viewTogglePressed: {
+    backgroundColor: ShopColors.neon,
+  },
+  viewToggleText: {
+    color: ShopColors.ink,
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+  },
+  info: {
+    padding: 10,
+  },
+  category: {
+    color: ShopColors.muted,
+    fontSize: 10,
+    fontWeight: '800',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  name: {
+    minHeight: 38,
+    color: ShopColors.ink,
+    fontSize: 18,
+    lineHeight: 19,
+    fontWeight: '900',
+    letterSpacing: -0.7,
+    marginTop: 4,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-end',
+    gap: 8,
+    marginTop: 10,
+  },
+  price: {
+    color: ShopColors.ink,
+    fontSize: 17,
+    fontWeight: '900',
+  },
+  oldPrice: {
+    color: ShopColors.muted,
+    fontSize: 10,
+    fontWeight: '700',
+    textDecorationLine: 'line-through',
+    marginTop: 1,
+  },
+  addButton: {
+    width: 42,
+    height: 42,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: ShopColors.ink,
+    borderWidth: 2,
+    borderColor: ShopColors.ink,
+  },
+  addButtonPressed: {
+    backgroundColor: ShopColors.purple,
+    transform: [{ scale: 0.94 }],
+  },
+});
