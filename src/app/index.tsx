@@ -2,12 +2,14 @@ import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-n
 
 import { ProductCard } from '@/components/shop/product-card';
 import { ShopShell } from '@/components/shop/shop-shell';
-import { products, ShopColors } from '@/constants/shop';
+import { ShopColors } from '@/constants/shop';
 import { useCart } from '@/context/cart-context';
+import { useProducts } from '@/context/product-context';
 
 export default function ShopScreen() {
   const { width } = useWindowDimensions();
   const { addItem } = useCart();
+  const { products, source } = useProducts();
   const cardWidth: `${number}%` = width >= 940 ? '31.7%' : width >= 480 ? '48.2%' : '47.5%';
 
   return (
@@ -39,7 +41,7 @@ export default function ShopScreen() {
 
           <View style={styles.marquee}>
             <Text numberOfLines={1} style={styles.marqueeText}>
-              ✦ FREE SHIPPING OVER ฿2,500 ✦ NEW DROP EVERY FRIDAY ✦ LIMITED RUNS ONLY ✦
+              ✦ {source === 'github' ? 'LIVE GITHUB CATALOG' : 'OFFLINE CATALOG'} ✦ FREE SHIPPING OVER ฿2,500 ✦
             </Text>
           </View>
 
@@ -49,7 +51,7 @@ export default function ShopScreen() {
               <Text style={styles.sectionTitle}>TRENDING NOW</Text>
             </View>
             <View style={styles.countSticker}>
-              <Text style={styles.countStickerText}>04 PIECES</Text>
+              <Text style={styles.countStickerText}>{String(products.length).padStart(2, '0')} PIECES</Text>
             </View>
           </View>
 

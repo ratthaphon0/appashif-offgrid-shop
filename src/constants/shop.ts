@@ -16,8 +16,10 @@ export type Product = {
   id: string;
   name: string;
   category: string;
+  description: string;
   price: number;
   originalPrice?: number;
+  stock: number;
   badge: string;
   badgeColor: string;
   imageColor: string;
@@ -29,13 +31,15 @@ export type Product = {
   }[];
 };
 
-export const products: Product[] = [
+export const fallbackProducts: Product[] = [
   {
     id: 'acid-grid-tee',
     name: 'Acid Grid Tee',
     category: 'Oversized T-shirt',
+    description: 'Acid-wash cotton tee with a relaxed streetwear fit.',
     price: 890,
     originalPrice: 1190,
+    stock: 18,
     badge: 'SALE -25%',
     badgeColor: ShopColors.pink,
     imageColor: '#D9FF74',
@@ -56,7 +60,9 @@ export const products: Product[] = [
     id: 'signal-cargo',
     name: 'Signal Cargo',
     category: 'Utility Pants',
+    description: 'Multi-pocket cargo pants built for everyday movement.',
     price: 1590,
+    stock: 42,
     badge: 'LIMITED',
     badgeColor: ShopColors.orange,
     imageColor: '#FF9D73',
@@ -77,8 +83,10 @@ export const products: Product[] = [
     id: 'pixel-rush-hoodie',
     name: 'Pixel Rush Hoodie',
     category: 'Heavyweight Hoodie',
+    description: 'Warm heavyweight hoodie with an oversized silhouette.',
     price: 1890,
     originalPrice: 2290,
+    stock: 9,
     badge: 'HOT DROP',
     badgeColor: ShopColors.neon,
     imageColor: '#B8A0FF',
@@ -99,7 +107,9 @@ export const products: Product[] = [
     id: 'static-runner',
     name: 'Switch Move Runner',
     category: 'Unisex Sneakers',
+    description: 'Lightweight everyday runners for a fast city pace.',
     price: 2190,
+    stock: 14,
     badge: 'EXCLUSIVE',
     badgeColor: ShopColors.purple,
     imageColor: '#8DE4FF',

@@ -3,14 +3,16 @@ import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-n
 import { PageHeading } from '@/components/shop/page-heading';
 import { ProductCard } from '@/components/shop/product-card';
 import { ShopShell } from '@/components/shop/shop-shell';
-import { products, ShopColors } from '@/constants/shop';
+import { ShopColors } from '@/constants/shop';
 import { useCart } from '@/context/cart-context';
+import { useProducts } from '@/context/product-context';
 
 const filters = ['ALL', 'NEW', 'SALE', 'LIMITED'];
 
 export default function ProductsScreen() {
   const { width } = useWindowDimensions();
   const { addItem } = useCart();
+  const { products, source, isLoading, error, refreshProducts } = useProducts();
   const cardWidth: `${number}%` = width >= 940 ? '31.7%' : '47.5%';
 
   return (
@@ -23,9 +25,19 @@ export default function ProductsScreen() {
           <PageHeading
             eyebrow="THE FULL COLLECTION"
             title="PRODUCTS"
-            badge={`${products.length} ITEMS`}
+            badge={isLoading ? 'SYNCING…' : `${products.length} ITEMS`}
             badgeColor={ShopColors.pink}
           />
+
+          <View style={styles.catalogStatus}>
+            <Text style={styles.catalogStatusText}>
+              {source === 'github' ? 'LIVE: GITHUB JSON' : 'OFFLINE: LOCAL FALLBACK'}
+            </Text>
+            <Text accessibilityRole="button" onPress={() => void refreshProducts()} style={styles.refreshText}>
+              REFRESH
+            </Text>
+          </View>
+          {error && <Text style={styles.errorText}>Using local products: {error}</Text>}
 
           <ScrollView
             horizontal
@@ -78,6 +90,36 @@ const styles = StyleSheet.create({
   filters: {
     gap: 8,
     paddingBottom: 16,
+  },
+  catalogStatus: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderWidth: 2,
+    borderColor: ShopColors.line,
+    backgroundColor: ShopColors.neon,
+  },
+  catalogStatusText: {
+    color: ShopColors.ink,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+  },
+  refreshText: {
+    color: ShopColors.purple,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.8,
+    textDecorationLine: 'underline',
+  },
+  errorText: {
+    color: ShopColors.muted,
+    fontSize: 10,
+    fontWeight: '700',
+    marginBottom: 12,
   },
   filter: {
     minWidth: 72,

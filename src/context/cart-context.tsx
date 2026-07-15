@@ -1,6 +1,7 @@
 import { createContext, PropsWithChildren, useContext, useMemo, useState } from 'react';
 
-import { Product, products } from '@/constants/shop';
+import { Product } from '@/constants/shop';
+import { useProducts } from './product-context';
 
 type CartLine = {
   product: Product;
@@ -22,6 +23,7 @@ const initialQuantities: Record<string, number> = {
 };
 
 export function CartProvider({ children }: PropsWithChildren) {
+  const { products } = useProducts();
   const [quantities, setQuantities] = useState(initialQuantities);
 
   const value = useMemo<CartContextValue>(() => {
@@ -45,7 +47,7 @@ export function CartProvider({ children }: PropsWithChildren) {
         }));
       },
     };
-  }, [quantities]);
+  }, [products, quantities]);
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
 }
