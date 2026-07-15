@@ -60,7 +60,7 @@
     "accentColor": "#FF4FA3",
     "edition": "NEW",
     "images": [
-      {
+      {n
         "label": "FRONT",
         "uri": "https://media.lotsthailand.com/media/catalog/product/cache/115fac86e6b61ded262cffd864631a46/8/b/8by8jk3-b_1_1.jpg"
       },
@@ -70,4 +70,4 @@
       }
     ]
   }
-]
+] 
