@@ -1,63 +1,110 @@
-# AppAshif OFF//GRID Shop
+# AppAshif OFF//GRID Shop — Classroom Demo
 
-React Native / Expo Router shopping interface for an OFF//GRID streetwear shop.
+ตัวอย่าง Full-stack สำหรับศึกษาเส้นทางข้อมูลจาก Expo frontend ไปยัง Express API
+และ MySQL โดยเน้นให้ clone แล้วทำตามได้โดยไม่ใช้ secret หรือข้อมูลฐานจริงของเจ้าของโปรเจกต์
 
-## Assignment Coverage
+## Current lesson
 
-- Displays a top navigation menu with brand, menu, search, cart badge, and category buttons.
-- Displays a bottom tab navigation menu with Home, Add, Products, and Categories.
-- Displays at least 3 products. The current Home screen renders 4 products from shared product data.
-- Product cards include image, badge, category, product name, price, sale price when available, and add-to-cart action.
-- The product catalogue is loaded from a versioned JSON file on GitHub. When the network is unavailable or the JSON is invalid, the app keeps working with a validated local fallback catalogue.
+**Cloud Database + Fetch API + Admin Product CRUD**
 
-## Main Source Files
+หัวข้อที่มีในโค้ดปัจจุบัน:
 
-- `src/components/shop/top-menu.tsx` - top navigation menu
-- `src/components/shop/bottom-menu.tsx` - bottom tab navigation menu
-- `src/app/index.tsx` - Home screen and product grid
-- `src/components/shop/product-card.tsx` - reusable product card UI
-- `src/constants/shop.ts` - product data and shop color tokens
-- `assets/data/products.json` - detailed product catalogue published to GitHub
-- `src/context/product-context.tsx` - GitHub fetch, JSON validation, loading state, and offline fallback
+- Fetch products/categories จาก Express + MySQL
+- Skeleton loading และ local read-only fallback
+- Search, category filter, drop filter และ sort
+- Admin JWT login
+- Add / Edit / Delete Product
+- Category combobox: เลือกของเดิมหรือพิมพ์ชื่อใหม่เพื่อสร้าง
+- Category CRUD
+- API validation, CORS, rate limit และ health check
 
-## Get started
+Payment ยังไม่อยู่ในขอบเขตของ demo นี้
 
-1. Install dependencies
+คู่มือภาษาไทยสำหรับเรียนตาม: [`docs/CLASSROOM_DEMO_TH.md`](docs/CLASSROOM_DEMO_TH.md)
 
-   ```bash
-   npm install
-   ```
+## Project structure
 
-2. Start the web app
+```text
+src/                         Expo / React Native frontend
+  app/add.tsx                Add/Edit Product + category combobox
+  app/products.tsx           Product list/filter/sort/delete
+  context/product-context.tsx
+  lib/api.ts                 Fetch API client
 
-   ```bash
-   npm run web
-   ```
+backend/                     Express + MySQL backend
+  src/routes/                REST API routes
+  src/*-repository.js        SQL access layer
+  database/database.sql      Empty classroom schema
+  database/migrations/       Migration source
+  scripts/                   Migrate/admin/API check tools
+```
 
-3. Open the local URL from Expo, usually:
+## 1. Create an empty database
 
-   ```text
-   http://localhost:8081
-   ```
+Import [`backend/database/database.sql`](backend/database/database.sql) with phpMyAdmin or MySQL.
+The file creates the `appashif_demo` schema and tables only—there are no product, category,
+or admin rows.
 
-## Scripts
+If your provider assigns a database name, replace `appashif_demo` with that name.
 
-- `npm run web` - start Expo for web
-- `npm run ios` - start Expo for iOS
-- `npm run android` - start Expo for Android
-- `npm run lint` - run Expo lint
+## 2. Run the backend
 
-## GitHub JSON lesson flow
+```bash
+cd backend
+cp .env.example .env
+npm ci
+```
 
-1. Edit `assets/data/products.json` and commit it to the `main` branch.
-2. The Products page requests the GitHub raw URL defined in `PRODUCT_JSON_URL`.
-3. The JSON is checked before it is shown in the UI; a malformed response or a network failure displays the local fallback instead of breaking the app.
-4. Use the **REFRESH** action on the Products page to fetch the latest committed catalogue.
+Edit `backend/.env` with your own MySQL settings and JWT secret, then create the first admin:
 
-## Tech Stack
+```bash
+read -rsp 'Admin password: ' APPASHIF_ADMIN_PASSWORD
+echo
+ADMIN_PASSWORD="$APPASHIF_ADMIN_PASSWORD" npm run admin:create -- --email admin@example.com
+unset APPASHIF_ADMIN_PASSWORD
+node server.js
+```
 
-- Expo 57
-- Expo Router
-- React 19
-- React Native 0.86
-- React Native Web
+Default API: `http://localhost:3000/api/v1`
+
+## 3. Run the frontend
+
+From the project root:
+
+```bash
+cp .env.example .env.local
+npm ci
+npm run web
+```
+
+Default web URL: `http://localhost:8081`
+
+## Useful commands
+
+```bash
+npm run lint
+npx tsc --noEmit
+npx expo export --platform web
+
+cd backend
+npm test
+npm run api:check
+```
+
+## Database data policy
+
+- `backend/database/database.sql` is schema-only.
+- `backend/database/seed-products.json` is intentionally an empty array.
+- The four products in `assets/data/products.json` are frontend fallback/demo data only;
+  importing the SQL file does not insert them into MySQL.
+- Create your own category and products from the Admin UI to complete the exercise.
+
+## Next lesson ideas
+
+The existing Add/Edit/Delete flow can be extended with image upload, richer validation,
+pagination, audit history, or additional admin roles without changing the basic API structure.
+
+## Security
+
+Never commit `.env`, `.env.local`, database passwords, admin passwords, JWT secrets,
+database dumps with real rows, or `node_modules`.

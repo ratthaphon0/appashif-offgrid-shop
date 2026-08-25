@@ -38,6 +38,16 @@ yarn-error.*
 .env*.local
 .env
 
+# local reports, screenshots, and live-server handoff files
+deliverables/*.docx
+deliverables/*.pdf
+deliverables/appashif_cloud_report_assets/
+img_for_word/
+/*.pdf
+docs/APPASHIF_CLOUD_HANDOFF.md
+docs/cloud-deployment-th.md
+scripts/build_cloud_report.py
+
 # typescript
 *.tsbuildinfo
 

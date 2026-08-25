@@ -1,8 +1,10 @@
-import { router } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { router, useLocalSearchParams, usePathname } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ShopColors } from '@/constants/shop';
+import { useProducts } from '@/context/product-context';
 
 import { ShopIcon } from './shop-icon';
 
@@ -10,9 +12,73 @@ type TopMenuProps = {
   cartCount: number;
 };
 
-const categories = ['NEW DROP', 'TEES', 'LAYERS', 'BOTTOMS', 'ACCESSORIES'];
+const defaultCategories = ['TEES', 'LAYERS', 'BOTTOMS', 'ACCESSORIES'];
+
+type MenuItem = {
+  key: string;
+  label: string;
+  type: 'drop' | 'category';
+  value: string;
+};
 
 export function TopMenu({ cartCount }: TopMenuProps) {
+  const pathname = usePathname();
+  const params = useLocalSearchParams<{ category?: string; drop?: string }>();
+  const productState = useProducts();
+  const [badgeScale] = useState(() => new Animated.Value(1));
+
+  useEffect(() => {
+    if (cartCount > 0) {
+      Animated.sequence([
+        Animated.timing(badgeScale, { toValue: 1.4, duration: 120, useNativeDriver: true }),
+        Animated.spring(badgeScale, { toValue: 1, friction: 3, tension: 40, useNativeDriver: true }),
+      ]).start();
+    }
+  }, [cartCount, badgeScale]);
+
+  const dbCategories = productState?.categories ?? [];
+  const categoryList =
+    dbCategories.length > 0
+      ? dbCategories.map((c) => c.name)
+      : defaultCategories;
+
+  const items: MenuItem[] = [
+    { key: 'NEW DROP', label: 'NEW DROP', type: 'drop', value: 'NEW' },
+    ...categoryList.map((catName) => ({
+      key: catName,
+      label: catName.toUpperCase(),
+      type: 'category' as const,
+      value: catName,
+    })),
+  ];
+
+  const isProductsPage = pathname === '/products';
+
+  const isItemActive = (item: MenuItem) => {
+    if (!isProductsPage) {
+      return item.key === 'NEW DROP';
+    }
+    if (item.type === 'drop') {
+      return params.drop === 'NEW';
+    }
+    if (item.type === 'category') {
+      if (params.drop === 'NEW') return false;
+      if (!params.category || params.category === 'ALL') {
+        return false;
+      }
+      return params.category.toLowerCase() === item.value.toLowerCase();
+    }
+    return false;
+  };
+
+  const handlePress = (item: MenuItem) => {
+    if (item.type === 'drop') {
+      router.push({ pathname: '/products', params: { drop: 'NEW', category: 'ALL' } });
+    } else {
+      router.push({ pathname: '/products', params: { category: item.value, drop: 'ALL' } });
+    }
+  };
+
   return (
     <SafeAreaView edges={['top']} style={styles.safeArea}>
       <View style={styles.inner}>
@@ -60,9 +126,9 @@ export function TopMenu({ cartCount }: TopMenuProps) {
                 }}
                 size={21}
               />
-              <View style={styles.cartBadge}>
+              <Animated.View style={[styles.cartBadge, { transform: [{ scale: badgeScale }] }]}>
                 <Text style={styles.cartBadgeText}>{cartCount}</Text>
-              </View>
+              </Animated.View>
             </Pressable>
           </View>
         </View>
@@ -71,24 +137,27 @@ export function TopMenu({ cartCount }: TopMenuProps) {
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoryRow}>
-          {categories.map((category, index) => (
-            <Pressable
-              key={category}
-              onPress={() => router.push('/products')}
-              style={({ pressed }) => [
-                styles.categoryButton,
-                index === 0 && styles.categoryButtonActive,
-                pressed && styles.pressed,
-              ]}>
-              <Text
-                style={[
-                  styles.categoryText,
-                  index === 0 && styles.categoryTextActive,
+          {items.map((item) => {
+            const active = isItemActive(item);
+            return (
+              <Pressable
+                key={item.key}
+                onPress={() => handlePress(item)}
+                style={({ pressed }) => [
+                  styles.categoryButton,
+                  active && styles.categoryButtonActive,
+                  pressed && styles.pressed,
                 ]}>
-                {category}
-              </Text>
-            </Pressable>
-          ))}
+                <Text
+                  style={[
+                    styles.categoryText,
+                    active && styles.categoryTextActive,
+                  ]}>
+                  {item.label}
+                </Text>
+              </Pressable>
+            );
+          })}
         </ScrollView>
       </View>
     </SafeAreaView>

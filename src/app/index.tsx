@@ -1,16 +1,23 @@
+import { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { ProductCard } from '@/components/shop/product-card';
+import { ProductSkeleton } from '@/components/shop/product-skeleton';
 import { ShopShell } from '@/components/shop/shop-shell';
 import { ShopColors } from '@/constants/shop';
 import { useCart } from '@/context/cart-context';
 import { useProducts } from '@/context/product-context';
+import { CLOUD_DEPLOYMENT_LABEL } from '@/lib/api';
 
 export default function ShopScreen() {
   const { width } = useWindowDimensions();
   const { addItem } = useCart();
-  const { products, source } = useProducts();
+  const { products, source, isLoading, error, refreshCatalog } = useProducts();
   const cardWidth: `${number}%` = width >= 940 ? '31.7%' : width >= 480 ? '48.2%' : '47.5%';
+
+  const activeProducts = useMemo(() => {
+    return products.filter((product) => product.isActive !== false);
+  }, [products]);
 
   return (
     <ShopShell active="home">
@@ -41,7 +48,8 @@ export default function ShopScreen() {
 
           <View style={styles.marquee}>
             <Text numberOfLines={1} style={styles.marqueeText}>
-              ✦ {source === 'github' ? 'LIVE GITHUB CATALOG' : 'OFFLINE CATALOG'} ✦ FREE SHIPPING OVER ฿2,500 ✦
+              ✦ {source === 'api' ? `LIVE: ${CLOUD_DEPLOYMENT_LABEL}` : 'SAFE MODE: LOCAL FALLBACK'} ✦{' '}
+              {activeProducts.length} PRODUCTS ✦
             </Text>
           </View>
 
@@ -51,20 +59,33 @@ export default function ShopScreen() {
               <Text style={styles.sectionTitle}>TRENDING NOW</Text>
             </View>
             <View style={styles.countSticker}>
-              <Text style={styles.countStickerText}>{String(products.length).padStart(2, '0')} PIECES</Text>
+              <Text style={styles.countStickerText}>{String(activeProducts.length).padStart(2, '0')} PIECES</Text>
             </View>
           </View>
 
           <View nativeID="product-grid" style={styles.productGrid}>
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                width={cardWidth}
-                onAdd={() => addItem(product.id)}
-              />
-            ))}
+            {isLoading
+              ? Array.from({ length: 4 }, (_, index) => (
+                  <ProductSkeleton key={index} width={cardWidth} />
+                ))
+              : activeProducts.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    width={cardWidth}
+                    onAdd={() => addItem(product.id)}
+                  />
+                ))}
           </View>
+
+          {error && (
+            <View style={styles.apiNotice}>
+              <Text style={styles.apiNoticeText}>Cloud API unavailable. Showing the original 4 products.</Text>
+              <Text accessibilityRole="button" onPress={() => void refreshCatalog()} style={styles.apiRetry}>
+                RETRY API
+              </Text>
+            </View>
+          )}
 
           <View style={styles.classNote}>
             <Text style={styles.classNoteTitle}>DESIGNED TO STAND OUT.</Text>
@@ -236,6 +257,28 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     justifyContent: 'space-between',
     rowGap: 20,
+  },
+  apiNotice: {
+    marginTop: 18,
+    padding: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+    borderWidth: 2,
+    borderColor: ShopColors.line,
+    backgroundColor: ShopColors.orange,
+  },
+  apiNoticeText: {
+    flex: 1,
+    color: ShopColors.ink,
+    fontSize: 10,
+    fontWeight: '800',
+  },
+  apiRetry: {
+    color: ShopColors.purple,
+    fontSize: 10,
+    fontWeight: '900',
+    textDecorationLine: 'underline',
   },
   classNote: {
     marginTop: 30,

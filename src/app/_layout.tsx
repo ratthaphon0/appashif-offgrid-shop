@@ -6,6 +6,7 @@ import '@/global.css';
 
 import { AnimatedSplashOverlay } from '@/components/animated-icon';
 import { ShopColors } from '@/constants/shop';
+import { AuthProvider } from '@/context/auth-context';
 import { CartProvider } from '@/context/cart-context';
 import { ProductProvider } from '@/context/product-context';
 
@@ -13,18 +14,20 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
   return (
-    <ProductProvider>
-      <CartProvider>
-        <StatusBar style="dark" />
-        <AnimatedSplashOverlay />
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: ShopColors.cream } }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="add" />
-          <Stack.Screen name="products" />
-          <Stack.Screen name="categories" />
-          <Stack.Screen name="cart" />
-        </Stack>
-      </CartProvider>
-    </ProductProvider>
+    <AuthProvider>
+      <ProductProvider>
+        <CartProvider>
+          <StatusBar style="dark" />
+          <AnimatedSplashOverlay />
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: ShopColors.cream } }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="add" />
+            <Stack.Screen name="products" />
+            <Stack.Screen name="categories" />
+            <Stack.Screen name="cart" />
+          </Stack>
+        </CartProvider>
+      </ProductProvider>
+    </AuthProvider>
   );
 }

@@ -150,18 +150,10 @@ export default function CartScreen() {
                 <Text style={styles.totalValue}>{formatPrice(totals.total)}</Text>
               </View>
 
-              <Pressable
-                accessibilityRole="button"
-                disabled={items.length === 0}
-                style={({ pressed }) => [
-                  styles.checkoutButton,
-                  items.length === 0 && styles.checkoutDisabled,
-                  pressed && items.length > 0 && styles.checkoutPressed,
-                ]}>
-                <Text style={styles.checkoutText}>CHECKOUT NOW →</Text>
-              </Pressable>
-
-              <Text style={styles.secureText}>SECURE CHECKOUT · EASY RETURNS · NO DRAMA</Text>
+              <View style={styles.catalogNote}>
+                <Text style={styles.catalogNoteTitle}>BAG PREVIEW ONLY</Text>
+                <Text style={styles.catalogNoteBody}>Ordering is not enabled in this release.</Text>
+              </View>
             </View>
           </View>
         </View>
@@ -387,35 +379,24 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: -1,
   },
-  checkoutButton: {
-    minHeight: 56,
+  catalogNote: {
+    padding: 13,
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: ShopColors.neon,
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: ShopColors.line,
-    borderRadius: 12,
+    backgroundColor: ShopColors.neon,
   },
-  checkoutPressed: {
-    backgroundColor: ShopColors.pink,
-    transform: [{ translateY: 2 }],
-  },
-  checkoutDisabled: {
-    opacity: 0.45,
-  },
-  checkoutText: {
+  catalogNoteTitle: {
     color: ShopColors.ink,
-    fontSize: 15,
+    fontSize: 11,
     fontWeight: '900',
     letterSpacing: 0.8,
   },
-  secureText: {
+  catalogNoteBody: {
     color: ShopColors.muted,
-    fontSize: 8,
+    fontSize: 9,
     fontWeight: '800',
-    letterSpacing: 0.5,
-    textAlign: 'center',
-    marginTop: 11,
+    marginTop: 3,
   },
   emptyState: {
     minHeight: 170,

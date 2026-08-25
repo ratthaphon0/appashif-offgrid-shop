@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { formatPrice, Product, ShopColors } from '@/constants/shop';
 
@@ -10,18 +10,57 @@ type ProductCardProps = {
   product: Product;
   width: `${number}%`;
   onAdd: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onToggleActive?: () => void;
+  isDeleting?: boolean;
 };
 
-export function ProductCard({ product, width, onAdd }: ProductCardProps) {
+export function ProductCard({
+  product,
+  width,
+  onAdd,
+  onEdit,
+  onDelete,
+  onToggleActive,
+  isDeleting = false,
+}: ProductCardProps) {
   const [imageIndex, setImageIndex] = useState(0);
+  const [isAdded, setIsAdded] = useState(false);
+  const [scaleAnim] = useState(() => new Animated.Value(1));
+
   const activeImage = product.images[imageIndex] ?? product.images[0];
   const canSwitchImages = product.images.length > 1;
 
+  const handleAdd = () => {
+    onAdd();
+    setIsAdded(true);
+
+    Animated.sequence([
+      Animated.timing(scaleAnim, { toValue: 1.3, duration: 110, useNativeDriver: true }),
+      Animated.spring(scaleAnim, { toValue: 1, friction: 3, tension: 40, useNativeDriver: true }),
+    ]).start();
+
+    setTimeout(() => {
+      setIsAdded(false);
+    }, 1200);
+  };
+
+  const isArchived = product.isActive === false;
+
   return (
     <View nativeID={`product-card-${product.id}`} style={[styles.cardShadow, { width }]}>
-      <View style={styles.card}>
-        <View style={[styles.badge, { backgroundColor: product.badgeColor }]}>
-          <Text style={styles.badgeText}>{product.badge}</Text>
+      <View style={[styles.card, isArchived && styles.cardArchived, isDeleting && styles.cardDeleting]}>
+        <View
+          style={[
+            styles.badge,
+            isArchived
+              ? { backgroundColor: ShopColors.muted, borderColor: ShopColors.line }
+              : { backgroundColor: product.badgeColor },
+          ]}>
+          <Text style={[styles.badgeText, isArchived && styles.archivedBadgeText]}>
+            {isArchived ? 'ARCHIVED' : product.badge}
+          </Text>
         </View>
 
         {canSwitchImages && (
@@ -39,27 +78,81 @@ export function ProductCard({ product, width, onAdd }: ProductCardProps) {
 
         <View style={styles.info}>
           <Text style={styles.category}>{product.category}</Text>
-          <Text numberOfLines={2} style={styles.name}>
+          <Text numberOfLines={2} style={[styles.name, isArchived && styles.archivedText]}>
             {product.name}
           </Text>
           <View style={styles.priceRow}>
             <View>
-              <Text style={styles.price}>{formatPrice(product.price)}</Text>
+              <Text style={[styles.price, isArchived && styles.archivedText]}>
+                {formatPrice(product.price)}
+              </Text>
               {product.originalPrice && (
                 <Text style={styles.oldPrice}>{formatPrice(product.originalPrice)}</Text>
               )}
             </View>
-            <Pressable
-              accessibilityLabel={`Add ${product.name} to cart`}
-              onPress={onAdd}
-              style={({ pressed }) => [styles.addButton, pressed && styles.addButtonPressed]}>
-              <ShopIcon
-                name={{ ios: 'plus', android: 'add', web: 'add' }}
-                color={ShopColors.white}
-                size={24}
-              />
-            </Pressable>
+
+            {!isArchived && (
+              <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
+                <Pressable
+                  accessibilityLabel={`Add ${product.name} to cart`}
+                  onPress={handleAdd}
+                  style={({ pressed }) => [
+                    styles.addButton,
+                    isAdded && styles.addButtonSuccess,
+                    pressed && styles.addButtonPressed,
+                  ]}>
+                  {isAdded ? (
+                    <Text style={styles.addedBadgeText}>✓ ADDED</Text>
+                  ) : (
+                    <ShopIcon
+                      name={{ ios: 'plus', android: 'add', web: 'add' }}
+                      color={ShopColors.white}
+                      size={24}
+                    />
+                  )}
+                </Pressable>
+              </Animated.View>
+            )}
           </View>
+          {(onEdit || onDelete || onToggleActive) && (
+            <View style={styles.adminActions}>
+              {onEdit && (
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={isDeleting}
+                  onPress={onEdit}
+                  style={[styles.adminButton, isDeleting && styles.disabledButton]}>
+                  <Text style={styles.adminButtonText}>EDIT</Text>
+                </Pressable>
+              )}
+              {onToggleActive && (
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={isDeleting}
+                  onPress={onToggleActive}
+                  style={[
+                    styles.adminButton,
+                    isArchived ? styles.restoreButton : styles.archiveButton,
+                    isDeleting && styles.disabledButton,
+                  ]}>
+                  <Text style={styles.adminButtonText}>
+                    {isArchived ? 'RESTORE' : 'ARCHIVE'}
+                  </Text>
+                </Pressable>
+              )}
+              {onDelete && (
+                <Pressable
+                  accessibilityRole="button"
+                  disabled={isDeleting}
+                  onPress={onDelete}
+                  style={[styles.adminButton, styles.deleteButton, isDeleting && styles.disabledButton]}>
+                  <Text style={styles.adminButtonText}>
+                    {isDeleting ? 'DELETING…' : 'DELETE'}
+                  </Text>
+                </Pressable>
+              )}
+            </View>
+          )}
         </View>
       </View>
     </View>
@@ -171,5 +264,63 @@ const styles = StyleSheet.create({
   addButtonPressed: {
     backgroundColor: ShopColors.purple,
     transform: [{ scale: 0.94 }],
+  },
+  addButtonSuccess: {
+    paddingHorizontal: 8,
+    width: 'auto',
+    backgroundColor: ShopColors.neon,
+    borderColor: ShopColors.ink,
+  },
+  addedBadgeText: {
+    color: ShopColors.ink,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  adminActions: {
+    flexDirection: 'row',
+    gap: 7,
+    marginTop: 10,
+  },
+  adminButton: {
+    flex: 1,
+    minHeight: 34,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: ShopColors.line,
+    borderRadius: 7,
+    backgroundColor: ShopColors.neon,
+  },
+  deleteButton: {
+    backgroundColor: ShopColors.pink,
+  },
+  archiveButton: {
+    backgroundColor: ShopColors.orange,
+  },
+  restoreButton: {
+    backgroundColor: ShopColors.neon,
+  },
+  cardArchived: {
+    opacity: 0.6,
+    backgroundColor: '#EBE8E0',
+  },
+  archivedBadgeText: {
+    color: ShopColors.paper,
+  },
+  archivedText: {
+    color: ShopColors.muted,
+  },
+  disabledButton: {
+    opacity: 0.5,
+  },
+  cardDeleting: {
+    opacity: 0.6,
+  },
+  adminButtonText: {
+    color: ShopColors.ink,
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 0.7,
   },
 });

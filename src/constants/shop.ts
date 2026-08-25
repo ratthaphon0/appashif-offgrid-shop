@@ -16,6 +16,7 @@ export type Product = {
   id: string;
   name: string;
   category: string;
+  categorySlug?: string;
   description: string;
   price: number;
   originalPrice?: number;
@@ -25,6 +26,7 @@ export type Product = {
   imageColor: string;
   accentColor: string;
   edition: string;
+  isActive?: boolean;
   images: {
     label: string;
     uri: string;
