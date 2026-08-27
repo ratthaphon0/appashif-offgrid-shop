@@ -1,12 +1,13 @@
-# AppAshif Backend — Classroom Version
+# AppAshif Backend
 
-Express 5 + MySQL API for learning product/category CRUD, authentication,
-filtering, sorting, pagination, and deployment health checks. Payment is not included.
+Express 5 + MySQL API for the AppAshif product catalogue. It provides product/category CRUD,
+authentication, filtering, sorting, pagination, and deployment health checks. Payment is not included.
 
 ## Empty database setup
 
 Import `database/database.sql` in phpMyAdmin or MySQL. The file creates the
-`appashif_demo` schema and tables only; it contains no `INSERT` statements.
+`appashif_demo` schema and tables only. The sanitized `database/appashif_cloud_export.sql`
+file contains catalogue data but intentionally contains no administrator credential row.
 
 Alternatively, create the database yourself and run the migration:
 
@@ -16,8 +17,8 @@ npm ci
 npm run db:migrate
 ```
 
-Do not run `db:seed` unless you have added your own teaching data to
-`database/seed-products.json`. The committed file is intentionally `[]`.
+Do not import the Cloud export into production without a backup and review. Create the
+administrator separately with `npm run admin:create`.
 
 ## Create the first admin
 
@@ -37,7 +38,7 @@ node server.js
 npm run api:check
 ```
 
-The default API base is `http://127.0.0.1:3000/api/v1`.
+The default local API base is `http://127.0.0.1:3000/api/v1`. The assigned live Cloud API uses port 3067.
 
 ## Main API
 

@@ -42,6 +42,11 @@ yarn-error.*
 deliverables/*.docx
 deliverables/*.pdf
 deliverables/appashif_cloud_report_assets/
+!deliverables/AppAshif_User_Manual.docx
+deliverables/.~lock*
+deliverables/Product_app_user_manual.zip
+deliverables/ip_std6730202734.sql
+/ip_std6730202734.sql
 img_for_word/
 /*.pdf
 docs/APPASHIF_CLOUD_HANDOFF.md
